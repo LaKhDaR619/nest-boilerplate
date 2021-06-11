@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -10,19 +10,42 @@ export class UsersService {
     @InjectRepository(User) private readonly userRepository: Repository<User>,
   ) {}
 
-  findAll(): Promise<User[]> {
-    return this.userRepository.find({ select: ['id', 'email'] });
+  async findAll(): Promise<any> {
+    const fetchedUsers = await this.userRepository.find({
+      select: ['id', 'email'],
+    });
+
+    return {
+      data: {
+        users: fetchedUsers,
+      },
+    };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne(id: string) {
+    const fetchedUser = await this.userRepository.findOne({ id });
+
+    if (!fetchedUser) throw new BadRequestException('user not found');
+
+    return {
+      data: {
+        user: fetchedUser,
+      },
+    };
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(id: string, updateUserDto: UpdateUserDto): Promise<void> {
+    const fetchedUser = await this.userRepository.findOne({ id });
+
+    if (!fetchedUser) throw new BadRequestException('user not found');
+
+    if (updateUserDto.email) fetchedUser.email = updateUserDto.email;
+    if (updateUserDto.password) fetchedUser.password = updateUserDto.password;
+
+    await this.userRepository.save(fetchedUser);
   }
 
-  async remove(id: string): Promise<any> {
-    return this.userRepository.delete({ id });
+  async remove(id: string): Promise<void> {
+    await this.userRepository.delete({ id });
   }
 }
