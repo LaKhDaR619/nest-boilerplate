@@ -1,6 +1,4 @@
 import {
-  BeforeInsert,
-  BeforeUpdate,
   Column,
   CreateDateColumn,
   Entity,
@@ -18,7 +16,7 @@ export class User {
   email: string;
 
   @Column()
-  password: string;
+  private password: string;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -26,9 +24,11 @@ export class User {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @BeforeInsert()
-  @BeforeUpdate()
-  private async encryptPassword() {
-    this.password = await bcrypt.hash(this.password, 10);
+  async setPassword(password: string) {
+    this.password = await bcrypt.hash(password, 10);
+  }
+
+  async checkPassword(password: string) {
+    return bcrypt.compare(password, this.password);
   }
 }

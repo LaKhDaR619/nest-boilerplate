@@ -55,7 +55,7 @@ export class UsersService {
     if (isEmailUsed) throw new BadRequestException('email already used');
 
     if (updateUserDto.email) fetchedUser.email = updateUserDto.email;
-    if (updateUserDto.password) fetchedUser.password = updateUserDto.password;
+    if (updateUserDto.password) fetchedUser.setPassword(updateUserDto.password);
 
     await this.userRepository.save(fetchedUser);
   }

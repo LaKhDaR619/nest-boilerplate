@@ -27,7 +27,10 @@ export class AuthService {
 
     if (fetchedUser) throw new BadRequestException('email already in use');
 
-    const newUser = this.userRepository.create(registerDTO);
+    const newUser = new User();
+    newUser.email = registerDTO.email;
+    await newUser.setPassword(registerDTO.password);
+
     const { id: newUserId } = await this.userRepository.save(newUser);
 
     return { data: { id: newUserId } };
@@ -38,10 +41,7 @@ export class AuthService {
       email: loginDTO.email,
     });
 
-    if (
-      !fetchedUser ||
-      !(await bcrypt.compare(loginDTO.password, fetchedUser.password))
-    )
+    if (!fetchedUser || !(await fetchedUser.checkPassword(loginDTO.password)))
       throw new UnauthorizedException();
 
     const payload = { email: fetchedUser.email, sub: fetchedUser.id };

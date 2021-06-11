@@ -27,14 +27,15 @@ export class AuthController {
   @Post('register')
   @ApiCreatedResponse()
   async register(@Body() body: RegisterDto) {
-    const result = { data: await this.authService.register(body) };
+    const result = await this.authService.register(body);
+
     return result;
   }
 
   @Post('login')
   @ApiCreatedResponse()
   async login(@Body() body: LoginDto, @Request() req: Req) {
-    const result = { data: await this.authService.login(body) };
+    const result = await this.authService.login(body);
 
     return result;
   }
@@ -44,7 +45,8 @@ export class AuthController {
   @ApiOkResponse()
   async currentUser(@Request() req: Req) {
     const { userId } = req.user as any;
-    const result = { data: await this.authService.currentUser(userId) };
+    const result = await this.authService.currentUser(userId);
+
     return result;
   }
 }
