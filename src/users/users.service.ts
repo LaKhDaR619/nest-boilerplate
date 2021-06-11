@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 
@@ -23,7 +23,12 @@ export class UsersService {
   }
 
   async findOne(id: string) {
-    const fetchedUser = await this.userRepository.findOne(id);
+    const fetchedUser = await this.userRepository.findOne({
+      where: {
+        id,
+      },
+      select: ['id', 'email'],
+    });
 
     if (!fetchedUser) throw new BadRequestException('user not found');
 
@@ -38,6 +43,16 @@ export class UsersService {
     const fetchedUser = await this.userRepository.findOne(id);
 
     if (!fetchedUser) throw new BadRequestException('user not found');
+
+    // check if email is used
+    const isEmailUsed = await this.userRepository.findOne({
+      where: {
+        id: Not(id),
+        email: updateUserDto.email,
+      },
+    });
+
+    if (isEmailUsed) throw new BadRequestException('email already used');
 
     if (updateUserDto.email) fetchedUser.email = updateUserDto.email;
     if (updateUserDto.password) fetchedUser.password = updateUserDto.password;
