@@ -46,6 +46,10 @@ export class UsersService {
   }
 
   async remove(id: string): Promise<void> {
-    await this.userRepository.delete({ id });
+    const fetchedUser = await this.userRepository.findOne({ id });
+
+    if (!fetchedUser) throw new BadRequestException('user not found');
+
+    await this.userRepository.delete(fetchedUser);
   }
 }
