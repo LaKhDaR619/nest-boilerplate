@@ -23,7 +23,7 @@ export class UsersService {
   }
 
   async findOne(id: string) {
-    const fetchedUser = await this.userRepository.findOne({ id });
+    const fetchedUser = await this.userRepository.findOne(id);
 
     if (!fetchedUser) throw new BadRequestException('user not found');
 
@@ -35,7 +35,7 @@ export class UsersService {
   }
 
   async update(id: string, updateUserDto: UpdateUserDto): Promise<void> {
-    const fetchedUser = await this.userRepository.findOne({ id });
+    const fetchedUser = await this.userRepository.findOne(id);
 
     if (!fetchedUser) throw new BadRequestException('user not found');
 
@@ -46,10 +46,10 @@ export class UsersService {
   }
 
   async remove(id: string): Promise<void> {
-    const fetchedUser = await this.userRepository.findOne({ id });
+    const fetchedUser = await this.userRepository.findOne(id);
 
     if (!fetchedUser) throw new BadRequestException('user not found');
 
-    await this.userRepository.delete(fetchedUser);
+    await this.userRepository.remove(fetchedUser);
   }
 }
