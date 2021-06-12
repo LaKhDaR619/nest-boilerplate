@@ -2,16 +2,13 @@ import {
   BadRequestException,
   Injectable,
   UnauthorizedException,
-  UseGuards,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/entities/user.entity';
 import { Repository } from 'typeorm';
-import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 @Injectable()
 export class AuthService {
@@ -38,7 +35,9 @@ export class AuthService {
 
   async login(loginDTO: LoginDto) {
     const fetchedUser = await this.userRepository.findOne({
-      email: loginDTO.email,
+      where: {
+        email: loginDTO.email,
+      },
     });
 
     if (!fetchedUser || !(await fetchedUser.checkPassword(loginDTO.password)))
@@ -46,11 +45,30 @@ export class AuthService {
 
     const payload = { email: fetchedUser.email, sub: fetchedUser.id };
     return {
-      access_token: this.jwtService.sign(payload),
+      data: {
+        access_token: this.jwtService.sign(payload),
+        user: {
+          id: fetchedUser.id,
+          email: fetchedUser.email,
+        },
+      },
     };
   }
 
   async currentUser(id: string) {
-    return this.userRepository.findOne(id);
+    const fetchedUser = await this.userRepository.findOne({
+      where: {
+        id,
+      },
+      select: ['id', 'email'],
+    });
+
+    if (!fetchedUser) throw new UnauthorizedException();
+
+    return {
+      data: {
+        user: fetchedUser,
+      },
+    };
   }
 }
