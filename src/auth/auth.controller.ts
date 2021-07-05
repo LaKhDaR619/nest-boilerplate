@@ -7,6 +7,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import {
+  ApiBearerAuth,
   ApiCreatedResponse,
   ApiOkResponse,
   ApiTags,
@@ -43,6 +44,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Get('current-user')
   @ApiOkResponse()
+  @ApiBearerAuth('JWT')
   async currentUser(@Request() req: Req) {
     const { userId } = req.user as any;
     const result = await this.authService.currentUser(userId);
